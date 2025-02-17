@@ -5,12 +5,12 @@ import { z } from "zod";
 export const weatherData = pgTable("weather_data", {
   id: serial("id").primaryKey(),
   location: text("location").notNull(),
-  temperature: text("temperature").notNull(),
-  humidity: text("humidity").notNull(),
-  windSpeed: text("wind_speed").notNull(),
+  temperature: numeric("temperature").notNull(),
+  humidity: numeric("humidity").notNull(),
+  windSpeed: numeric("wind_speed").notNull(),
   description: text("description").notNull(),
   icon: text("icon").notNull(),
-  timestamp: text("timestamp").notNull(),
+  timestamp: numeric("timestamp").notNull(),
 });
 
 export const insertWeatherSchema = createInsertSchema(weatherData).omit({ 
@@ -22,9 +22,9 @@ export type Weather = typeof weatherData.$inferSelect;
 
 export const weatherResponseSchema = z.object({
   location: z.string(),
-  temperature: z.number(),
-  humidity: z.number(),
-  windSpeed: z.number(),
+  temperature: z.number().transform(val => Number(val.toFixed(1))),
+  humidity: z.number().transform(val => Math.round(val)),
+  windSpeed: z.number().transform(val => Number(val.toFixed(1))),
   description: z.string(),
   icon: z.string(),
   timestamp: z.number()

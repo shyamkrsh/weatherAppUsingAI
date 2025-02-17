@@ -17,7 +17,13 @@ export class MemStorage implements IStorage {
   async saveWeather(weatherData: WeatherResponse): Promise<Weather> {
     const weather: Weather = {
       id: this.currentId++,
-      ...weatherData
+      temperature: weatherData.temperature.toString(),
+      humidity: weatherData.humidity.toString(),
+      windSpeed: weatherData.windSpeed.toString(),
+      description: weatherData.description,
+      location: weatherData.location,
+      icon: weatherData.icon,
+      timestamp: weatherData.timestamp.toString()
     };
     this.weather.push(weather);
     return weather;

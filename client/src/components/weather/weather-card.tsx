@@ -22,7 +22,7 @@ export function WeatherCard({ weather }: WeatherCardProps) {
       <CardContent className="grid gap-4">
         <div className="flex items-center gap-4">
           <Thermometer className="h-5 w-5 text-primary" />
-          <span>{Math.round(weather.temperature)}°C</span>
+          <span>{weather.temperature.toFixed(1)}°C</span>
         </div>
         <div className="flex items-center gap-4">
           <Cloud className="h-5 w-5 text-primary" />
@@ -30,11 +30,11 @@ export function WeatherCard({ weather }: WeatherCardProps) {
         </div>
         <div className="flex items-center gap-4">
           <Droplets className="h-5 w-5 text-primary" />
-          <span>{weather.humidity}% Humidity</span>
+          <span>{Math.round(weather.humidity)}% Humidity</span>
         </div>
         <div className="flex items-center gap-4">
           <Wind className="h-5 w-5 text-primary" />
-          <span>{weather.windSpeed} m/s Wind</span>
+          <span>{weather.windSpeed.toFixed(1)} m/s Wind</span>
         </div>
       </CardContent>
     </Card>
