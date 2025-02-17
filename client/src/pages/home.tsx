@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { WeatherCard } from "@/components/weather/weather-card";
 import { LoadingCard } from "@/components/weather/loading-card";
+import { LocationSearch } from "@/components/weather/location-search";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -8,13 +9,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 
+interface Location {
+  name: string;
+  lat: number;
+  lon: number;
+}
+
 export default function Home() {
   const [coords, setCoords] = useState<{ lat: number; lon: number }>();
   const { toast } = useToast();
   const [locationError, setLocationError] = useState<string>();
+  const [selectedLocation, setSelectedLocation] = useState<Location>();
 
   const requestLocation = () => {
     setLocationError(undefined);
+    setSelectedLocation(undefined);
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -52,8 +61,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    requestLocation();
-  }, []);
+    if (!selectedLocation) {
+      requestLocation();
+    }
+  }, [selectedLocation]);
+
+  const handleLocationSelect = (location: Location) => {
+    setSelectedLocation(location);
+    setCoords({ lat: location.lat, lon: location.lon });
+  };
 
   const { data: weather, isLoading, error } = useQuery({
     queryKey: ["/api/weather", coords?.lat, coords?.lon],
@@ -73,33 +89,36 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+    <div className="min-h-screen bg-background p-4">
       <ThemeToggle />
-      {locationError ? (
-        <Card className="w-full max-w-md mx-auto">
-          <CardContent className="pt-6 text-center">
-            <p className="mb-4 text-destructive">{locationError}</p>
-            <Button onClick={requestLocation} className="gap-2">
-              <MapPin className="h-4 w-4" />
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      ) : isLoading ? (
-        <LoadingCard />
-      ) : error ? (
-        <Card className="w-full max-w-md mx-auto">
-          <CardContent className="pt-6 text-center">
-            <p className="mb-4 text-destructive">{error.message}</p>
-            <Button onClick={requestLocation} className="gap-2">
-              <MapPin className="h-4 w-4" />
-              Retry
-            </Button>
-          </CardContent>
-        </Card>
-      ) : weather ? (
-        <WeatherCard weather={weather} />
-      ) : null}
+      <div className="max-w-md mx-auto pt-16 space-y-4">
+        <LocationSearch onLocationSelect={handleLocationSelect} />
+        {locationError ? (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <p className="mb-4 text-destructive">{locationError}</p>
+              <Button onClick={requestLocation} className="gap-2">
+                <MapPin className="h-4 w-4" />
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        ) : isLoading ? (
+          <LoadingCard />
+        ) : error ? (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <p className="mb-4 text-destructive">{error.message}</p>
+              <Button onClick={requestLocation} className="gap-2">
+                <MapPin className="h-4 w-4" />
+                Retry
+              </Button>
+            </CardContent>
+          </Card>
+        ) : weather ? (
+          <WeatherCard weather={weather} />
+        ) : null}
+      </div>
     </div>
   );
 }

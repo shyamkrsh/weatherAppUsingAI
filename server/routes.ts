@@ -6,6 +6,46 @@ import { weatherResponseSchema } from "@shared/schema";
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 
 export async function registerRoutes(app: Express) {
+  app.get("/api/locations", async (req, res) => {
+    if (!OPENWEATHER_API_KEY) {
+      return res.status(500).json({ 
+        message: "OpenWeather API key is not configured" 
+      });
+    }
+
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ 
+        message: "Missing search query" 
+      });
+    }
+
+    try {
+      const response = await fetch(
+        `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q.toString())}&limit=5&appid=${OPENWEATHER_API_KEY}`
+      );
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Geocoding API error: ${error}`);
+      }
+
+      const data = await response.json();
+      const locations = data.map((item: any) => ({
+        name: `${item.name}${item.state ? `, ${item.state}` : ""}${item.country ? `, ${item.country}` : ""}`,
+        lat: item.lat,
+        lon: item.lon
+      }));
+
+      res.json(locations);
+    } catch (error) {
+      console.error("Geocoding API error:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to search locations" 
+      });
+    }
+  });
+
   app.get("/api/weather", async (req, res) => {
     if (!OPENWEATHER_API_KEY) {
       return res.status(500).json({ 
