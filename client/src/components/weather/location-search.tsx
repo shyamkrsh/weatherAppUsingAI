@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Command } from "@/components/ui/command";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -31,7 +38,7 @@ export function LocationSearch({ onLocationSelect }: LocationSearchProps) {
       setLocations([]);
       return;
     }
-    
+
     setLoading(true);
     try {
       const response = await fetch(`/api/locations?q=${encodeURIComponent(query)}`);
@@ -65,48 +72,49 @@ export function LocationSearch({ onLocationSelect }: LocationSearchProps) {
         <Command>
           <div className="flex items-center border-b px-3">
             <MapPin className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <Input
+            <CommandInput
               placeholder="Search locations..."
               value={value}
-              onChange={(e) => {
-                setValue(e.target.value);
-                searchLocations(e.target.value);
+              onValueChange={(value) => {
+                setValue(value);
+                searchLocations(value);
               }}
               className="h-9 border-0 focus-visible:ring-0"
             />
           </div>
-          <div className="py-2">
-            {loading ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-4 w-4 animate-spin" />
-              </div>
-            ) : locations.length > 0 ? (
-              locations.map((location) => (
-                <Command.Item
-                  key={`${location.lat}-${location.lon}`}
-                  value={location.name}
-                  onSelect={() => {
-                    setValue(location.name);
-                    onLocationSelect(location);
-                    setOpen(false);
-                  }}
-                  className="px-3 py-2 cursor-pointer hover:bg-accent"
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === location.name ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {location.name}
-                </Command.Item>
-              ))
-            ) : (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                {value ? "No locations found." : "Start typing to search..."}
-              </div>
-            )}
-          </div>
+          <CommandList>
+            <CommandEmpty className="py-6 text-center text-sm">
+              {value ? "No locations found." : "Start typing to search..."}
+            </CommandEmpty>
+            <CommandGroup>
+              {loading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              ) : (
+                locations.map((location) => (
+                  <CommandItem
+                    key={`${location.lat}-${location.lon}`}
+                    value={location.name}
+                    onSelect={() => {
+                      setValue(location.name);
+                      onLocationSelect(location);
+                      setOpen(false);
+                    }}
+                    className="px-3 py-2 cursor-pointer"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === location.name ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {location.name}
+                  </CommandItem>
+                ))
+              )}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
