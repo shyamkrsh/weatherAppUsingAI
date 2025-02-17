@@ -2,27 +2,29 @@ import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
 import { weatherResponseSchema } from "@shared/schema";
+import dotenv from 'dotenv'
+dotenv.config();
 
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 
 export async function registerRoutes(app: Express) {
   app.get("/api/locations", async (req, res) => {
     if (!OPENWEATHER_API_KEY) {
-      return res.status(500).json({ 
-        message: "OpenWeather API key is not configured" 
+      return res.status(500).json({
+        message: "OpenWeather API key is not configured"
       });
     }
 
     const { q } = req.query;
     if (!q) {
-      return res.status(400).json({ 
-        message: "Missing search query" 
+      return res.status(400).json({
+        message: "Missing search query"
       });
     }
 
     try {
       const response = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q.toString())}&limit=5&appid=${OPENWEATHER_API_KEY}`
+        `http://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(q.toString())}&limit=5&appid=${"07de7b0f305fe356e7a70ebfef42d840"}`
       );
 
       if (!response.ok) {
@@ -40,24 +42,24 @@ export async function registerRoutes(app: Express) {
       res.json(locations);
     } catch (error) {
       console.error("Geocoding API error:", error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : "Failed to search locations" 
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to search locations"
       });
     }
   });
 
   app.get("/api/weather", async (req, res) => {
     if (!OPENWEATHER_API_KEY) {
-      return res.status(500).json({ 
-        message: "OpenWeather API key is not configured" 
+      return res.status(500).json({
+        message: "OpenWeather API key is not configured"
       });
     }
 
     const { lat, lon } = req.query;
 
     if (!lat || !lon) {
-      return res.status(400).json({ 
-        message: "Missing latitude or longitude parameters" 
+      return res.status(400).json({
+        message: "Missing latitude or longitude parameters"
       });
     }
 
@@ -93,8 +95,8 @@ export async function registerRoutes(app: Express) {
       res.json(parsed);
     } catch (error) {
       console.error("Weather API error:", error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : "Failed to fetch weather data" 
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to fetch weather data"
       });
     }
   });
